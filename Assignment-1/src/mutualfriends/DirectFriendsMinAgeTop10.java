@@ -206,7 +206,7 @@ public class DirectFriendsMinAgeTop10{
         Configuration conf = new Configuration();
         String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
         if (otherArgs.length != 4) {
-			System.err.println("Usage: DirectFriendsMinAgeTop10 <in> <userdata> <out> <temp>");
+			System.err.println("Usage: <in> <userdata> <out> <temp>");
 			System.exit(2);
 		}
         

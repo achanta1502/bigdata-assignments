@@ -142,7 +142,7 @@ if(job.waitForCompletion(true)) {
 conf = new Configuration();
 // get all args
 if (otherArgs.length != 3) {
-    System.err.println("Usage: MutualFriends <in> <out>");
+    System.err.println("Usage: <in> <out> <temp>");
     System.exit(2);
 }
 

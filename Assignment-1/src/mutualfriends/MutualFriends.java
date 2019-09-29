@@ -77,7 +77,7 @@ Configuration conf = new Configuration();
 String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
 // get all args
 if (otherArgs.length != 2) {
-    System.err.println("Usage: MutualFriends <in> <out>");
+    System.err.println("Usage: <in> <out>");
     System.exit(2);
 }
 

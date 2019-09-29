@@ -1,5 +1,4 @@
 package mutualfriends;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,15 +16,13 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import java.util.*;
-public class FriendNameState{
+public class MutualFriendsState{
 
 	public static class Map 
 			extends Mapper<LongWritable, Text, Text, Text>{
 		Text user = new Text();
 		Text friends = new Text();
 		HashMap<String,String> map = new HashMap<String,String>();
-		String friend1 = "";
-		String friend2 = "";
 		
 		public void map(LongWritable key, Text value, Context context)
 				throws IOException, InterruptedException{
@@ -52,13 +49,12 @@ public class FriendNameState{
 				}
 							
 			String userKey = (Integer.parseInt(userId) < Integer.parseInt(friend))?userId + "," +friend : friend + ","+ userId;
-			if(userKey.matches(friend1+","+friend2)) {					
-					user.set(userKey);
-					friend = map.get(friend);
-					String regex="((\\b"+ friend + "[^\\w]+)|\\b,?" + friend + "$)";
-					friends.set(string.replaceAll(regex, ""));
-					context.write(user,friends);
-				}
+								
+			user.set(userKey);
+			friend = map.get(friend);
+			String regex="((\\b"+ friend + "[^\\w]+)|\\b,?" + friend + "$)";
+			friends.set(string.replaceAll(regex, ""));
+			context.write(user,friends);
 			}
 		}
 		
@@ -68,8 +64,7 @@ public class FriendNameState{
 				super.setup(context);
 				Configuration conf = context.getConfiguration();
 				Path part = new Path(context.getConfiguration().get("ARGUMENT"));
-				friend1 = context.getConfiguration().get("friend1");
-				friend2 = context.getConfiguration().get("friend2");
+				
 				FileSystem fs = FileSystem.get(conf);
 				FileStatus[] fss = fs.listStatus(part);
 				for(FileStatus status : fss) {
@@ -81,7 +76,7 @@ public class FriendNameState{
 						String[] arr = line.split(",");
 						map.put(arr[0], arr[0]+":"+arr[1]+": "+arr[5]);
 						line = br.readLine();
-					} 
+					}
 				}
 		}
 	}
@@ -148,17 +143,15 @@ public class FriendNameState{
 		Configuration conf = new Configuration();
 		String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
 		// get all args
-		if (otherArgs.length != 5) {
-			System.err.println("Usage: <input file name> <join file name> <friend1> <friend2> <output file name>");
+		if (otherArgs.length != 3) {
+			System.err.println("Usage: <input file name> <userdata file> <output file name>");
 			System.exit(2);
 		}
 		conf.set("ARGUMENT", otherArgs[1]);
-		conf.set("friend1", otherArgs[2]);
-		conf.set("friend2", otherArgs[3]);
 		// create a job with name "mutual friends states"
 		@SuppressWarnings("deprecation")
-		Job job = new Job(conf, "friend name state");
-		job.setJarByClass(FriendNameState.class);
+		Job job = new Job(conf, "mutualfriends states");
+		job.setJarByClass(MutualFriendsState.class);
 		job.setMapperClass(Map.class);
 		job.setReducerClass(Reduce.class);
 
@@ -173,7 +166,7 @@ public class FriendNameState{
 		//set the HDFS path of the input data
 		FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
 		// set the HDFS path for the output
-		FileOutputFormat.setOutputPath(job, new Path(otherArgs[4]));
+		FileOutputFormat.setOutputPath(job, new Path(otherArgs[2]));
 		//Wait till job completion
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
