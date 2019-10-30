@@ -62,7 +62,7 @@ if __name__== "__main__":
     if len(all_news)>0:
         prod=connect_kafka_producer();
         for story in all_news:
-            print(json.dumps(story))
+            # print(json.dumps(story))
             publish_message(prod, 'guardian2', story)
             time.sleep(1)
         if prod is not None:
