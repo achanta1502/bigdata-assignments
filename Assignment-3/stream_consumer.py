@@ -5,10 +5,10 @@ import pandas as pd
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem.porter import PorterStemmer
+import csv
 
 def data_from_kafka_consumer(topic, time):
     data = []
-    file = open("/tmp/testdata.txt", "a")
     consumer = KafkaConsumer(topic,
                              bootstrap_servers=['localhost:9092'],
                              auto_offset_reset='earliest'
@@ -16,15 +16,15 @@ def data_from_kafka_consumer(topic, time):
     for msg in consumer:
         if time <= 0:
             break
-        print(msg.value)
-        a = re.sub('[^A-Za-z0-9\s]+', '', msg.value)
-        print(a)
-        data.append(msg.value)
-        file.write(msg.value + '\n')
+        cols = msg.value.split("||")
+        cols[-1] = re.sub('[^A-Za-z0-9\s]+', '', cols[-1])
+        data.append(cols)
         time = time - 1
     #df = pd.DataFrame(data)
-    file.close()
-
+    with open('/tmp/output.csv', 'wb') as test_file:
+        file_writer = csv.writer(test_file)
+        file_writer.writerows(data)
+    print(data)
     return data
 
 def stopwords_removal():
