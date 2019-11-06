@@ -59,11 +59,16 @@ if __name__== "__main__":
     
     url = 'http://content.guardianapis.com/search?from-date='+ fromDate +'&to-date='+ toDate +'&order-by=newest&show-fields=all&page-size=200&%20num_per_section=10000&api-key='+key        
     all_news=getData(url)
+    count = 0
     if len(all_news)>0:
         prod=connect_kafka_producer();
         for story in all_news:
             # print(json.dumps(story))
             publish_message(prod, 'guardian2', story)
+            count = count + 1
+            if count == 20:
+                break
+            print(count)
             time.sleep(1)
         if prod is not None:
                 prod.close()
