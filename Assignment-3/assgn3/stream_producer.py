@@ -66,7 +66,7 @@ if __name__== "__main__":
             # print(json.dumps(story))
             publish_message(prod, 'guardian2', story)
             count = count + 1
-            if count == 20:
+            if count == 100:
                 break
             print(count)
             time.sleep(1)
