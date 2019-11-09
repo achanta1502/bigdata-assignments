@@ -1,9 +1,10 @@
 from pyspark import SparkConf, SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
-from pyspark.ml import Pipeline
 from pyspark.sql import Row, DataFrame, SQLContext
-
+from pyspark.sql import SparkSession
+from utils import pipeline
+from stream_consumer import model_building
 
 def start():
     print("entered")
@@ -21,11 +22,13 @@ def start():
     sc = SparkContext(conf=conf)
     sc.setLogLevel("WARN")
     sqlContext = SQLContext(sc)
+    spark = SparkSession(sc)
     # create the Streaming Context from spark context with interval size 2 seconds
     ssc = StreamingContext(sc, 2)
     kafkaStream = KafkaUtils.createDirectStream(ssc, ['guardian2'], {"metadata.broker.list": "localhost:9092"})
     values = kafkaStream.map(lambda x: x[1].encode("ascii", "ignore"))
     lines = values.map(lambda x: x.split("||"))
+    # df = lines.toPandas()
     lines.foreachRDD(process)
     # pipeline = Pipeline(stages=[])
     ssc.start()
@@ -38,17 +41,28 @@ def getSqlContextInstance(sparkContext):
     return globals()['sqlContextSingletonInstance']
 
 
+def getSparkSessionInstance(sparkContext):
+    if ('sparkSessionSingletonInstance' not in globals()):
+        globals()['sparkSessionSingletonInstance'] = SparkSession(sparkContext)
+    return globals()['sparkSessionSingletonInstance']
+
+
 def process(time, rdd):
     print("========%s===========" % str(time))
     try:
         sqlContext = getSqlContextInstance(rdd.context)
-        rowRdd = rdd.map(lambda w: Row(label=w[0], review=w[1]))
-        # rowRdd.pprint()
-        wordsDataFrame = sqlContext.createDataFrame(rowRdd)
-        wordsDataFrame.show()
-    except:
-        print("exception")
+        spark = getSparkSessionInstance(rdd.context)
+        df = rdd.toDF()
+        pd_df = df.toPandas()
+        pd_df.columns = ["label", "review"]
+        pd_df.review.cast("string")
+        pd_df.label.cast("string")
+        print(pipeline(pd_df))
+    except Exception as e:
+        print(e)
         pass
 
+
 if __name__ == "__main__":
+    model_building()
     start()

@@ -1,32 +1,8 @@
 from kafka import KafkaConsumer
-import json, sys
-import os, re
 import pandas as pd
-import nltk
-import numpy as np
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.stem.porter import PorterStemmer
 import csv
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn import model_selection
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-from utils import train_test
-from utils import vector_fit_transform
-import socket
+from utils import train_test, vector_fit_transform, train_model, predict, accuracy
 
-# TCP_IP = 'localhost'
-# TCP_PORT = 9001
-#
-# # create sockets
-# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# # s.connect((TCP_IP, TCP_PORT))
-# s.bind((TCP_IP, TCP_PORT))
-# s.listen(1)
-# conn, addr = s.accept()
 
 def data_from_kafka_consumer(topic):
     data = []
@@ -36,12 +12,10 @@ def data_from_kafka_consumer(topic):
                              auto_offset_reset='earliest'
                              )
     time = 0
-    start()
     for msg in consumer:
         if time > 300:
             break
         # decoded = msg.value.decode('utf-8')
-        conn.send(msg.value)
         # cols  = decoded.split("||")
         # # dec = re.sub('[^A-Za-z0-9\s]+', ' ', cols[1])
         # asciidata = cols[1].encode("ascii", "ignore")
@@ -71,33 +45,13 @@ def text_processing():
     return df
 
 
-def model(X_train, y_train):
-    clf = MultinomialNB().fit(X_train, y_train)
-    return clf
-
-
-def predict(model, test):
-    return model.predict(test)
-
-def model1(X_train, y_train):
-    clf = LogisticRegression(solver='newton-cg', multi_class='multinomial').fit(X_train, y_train)
-    return clf
-
-
-def predict1(model, test):
-    return model.predict(test)
-
-
 def model_building():
     df = text_processing()
-    x_train, y_train, x_test, y_test = train_test(df, 250, 250)
+    x_train, y_train, x_test, y_test = train_test(df, 0.1)
     train_vectors, test_vectors = vector_fit_transform(x_train, x_test)
-    clf = model(train_vectors, y_train)
-    predicted = predict(clf, test_vectors)
-    print(accuracy_score(predicted, y_test))
-    clf1 = model1(train_vectors, y_train)
-    predicted1 = predict1(clf1, test_vectors)
-    print(accuracy_score(predicted1, y_test))
+    train_model(train_vectors, y_train)
+    predicted = predict(test_vectors)
+    print(accuracy(predicted, y_test))
 
 
 if __name__ == "__main__":
