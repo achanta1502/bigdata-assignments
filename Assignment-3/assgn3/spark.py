@@ -5,6 +5,12 @@ from pyspark.sql import Row, DataFrame, SQLContext
 from pyspark.sql import SparkSession
 from utils import pipeline
 from stream_consumer import model_building
+from elasticsearch import Elasticsearch
+
+
+def elasticSearch():
+    return Elasticsearch([{'host': 'localhost', 'port': 9200}])
+
 
 def start():
     print("entered")
@@ -55,12 +61,35 @@ def process(time, rdd):
         df = rdd.toDF()
         pd_df = df.toPandas()
         pd_df.columns = ["label", "review"]
-        pd_df.review.cast("string")
-        pd_df.label.cast("string")
-        print(pipeline(pd_df))
+        acc = pipeline(pd_df)
+        print(acc)
+        sendToES(acc)
     except Exception as e:
         print(e)
         pass
+
+def sendToES(data):
+    es = elasticSearch()
+    if not es.indices.exists(index="labels"):
+        datatype = {
+            "mappings": {
+                "request-info": {
+                    "properties": {
+                        "accuracy": {
+                            "type": "text"
+                        },
+                        "output": {
+                            "type": "text"
+                        },
+                        "predicted": {
+                            "type": "text"
+                        }
+                    }
+                }
+            }
+        }
+        es.indices.create(index="labels", body=datatype)
+    es.index(index="labels", doc_type="request-info", body=data)
 
 
 if __name__ == "__main__":

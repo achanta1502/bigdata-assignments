@@ -1,36 +1,34 @@
 from kafka import KafkaConsumer
 import pandas as pd
 import csv
+import sys
 from utils import train_test, vector_fit_transform, train_model, predict, accuracy
 
 
 def data_from_kafka_consumer(topic):
-    data = []
-    df = pd.DataFrame()
+    # df = pd.DataFrame()
     consumer = KafkaConsumer(topic,
                              bootstrap_servers=['localhost:9092'],
                              auto_offset_reset='earliest'
                              )
-    time = 0
-    for msg in consumer:
-        if time > 300:
-            break
-        # decoded = msg.value.decode('utf-8')
-        # cols  = decoded.split("||")
-        # # dec = re.sub('[^A-Za-z0-9\s]+', ' ', cols[1])
-        # asciidata = cols[1].encode("ascii", "ignore")
-        # data.append([asciidata, cols[0]])
+    with open('/home/achanta/Desktop/output.csv', mode='a') as test_file:
+        writer = csv.writer(test_file)
+        for msg in consumer:
+            decoded = msg.value.decode('utf-8')
+            cols  = decoded.split("||")
+            # dec = re.sub('[^A-Za-z0-9\s]+', ' ', cols[1])
+            asciidata = cols[1].encode("ascii", "ignore")
+            writer.writerow([asciidata, cols[0]])
+            print(asciidata)
         # time = time + 1
         # vals = data.get(cols[0], [])
         # vals.append(re.sub('[^A-Za-z0-9\s]+', ' ', cols[-1]))
         # data[cols[0]] = vals
     # print(word_tokenize(data[0][0]))
     # df.columns = ['headline', 'label']
-    #df = pd.DataFrame(data)
-    # with open('/home/achanta/Desktop/output.csv', mode='a') as test_file:
-    #     writer = csv.writer(test_file)
-    #     for line in data:
-    #         writer.writerow(line)
+    # df = pd.DataFrame(data)
+
+
     # return df
 
 
@@ -55,17 +53,17 @@ def model_building():
 
 
 if __name__ == "__main__":
-    # if len(sys.argv) != 2:
-    #     print("not enough arguments")
-    #     exit()
-    # topic = sys.argv[1]
-    # # time = int(sys.argv[2])
-    # mapped_data = data_from_kafka_consumer(topic)
+    if len(sys.argv) != 2:
+        print("not enough arguments")
+        exit()
+    topic = sys.argv[1]
+    # time = int(sys.argv[2])
+    data_from_kafka_consumer(topic)
     # print(df)
     # X_train, X_validation, y_train, y_validation = train_test(mapped_data)
     # model = model(X_train, y_train)
     #     predicted_value = predict(model, X_validation)
     # for i in range(len(predicted_value)):
     #     print(y_validation[i], predicted_value[i])
-    model_building()
+    # model_building()
 

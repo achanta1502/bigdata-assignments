@@ -66,21 +66,24 @@ def train_test(df, size):
     Y_train = train.loc[:, 'label'].values
     X_test = test.loc[:, 'review'].values
     Y_test = test.loc[:, 'label'].values
-    print(type(X_test))
-    print(type(Y_test))
     return X_train, Y_train, X_test, Y_test
 
 
 def test_data(df):
     X_test = df.loc[:, 'review'].values
+    x_test = [str(x) for x in X_test]
     Y_test = df.loc[:, 'label'].values
-    return X_test, Y_test
+    y_test = [int(x) for x in Y_test]
+    return x_test, y_test
 
 
 def pipeline(df):
     features, output = test_data(df)
     test_vectors = transform(features)
     predicted = predict(test_vectors)
-    print(predicted)
-    print(output)
-    return accuracy(predicted, output)
+    res = {
+        "accuracy": accuracy(predicted, output),
+        "output": output,
+        "predicted": predicted[0]
+    }
+    return res
