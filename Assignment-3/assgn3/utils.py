@@ -5,8 +5,12 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
+from os import path
+import pickle
+import pandas as pd
 
-
+modelpath = '/home/achanta/Desktop/model.sav'
+vectorpath = '/home/achanta/Desktop/vector.sav'
 model = LogisticRegression(solver='newton-cg', multi_class='multinomial')
 
 
@@ -14,12 +18,51 @@ def tokenize(text):
     tokens = set(word_tokenize(text))
     stop_words = stopwords_removal()
     tokens = [w.lower() for w in tokens if not w in stop_words]
-    #stems = [porter(item) for item in tokens]
-    return tokens
+    stems = [porter(item) for item in tokens]
+    return stems
 
 
 vect = TfidfVectorizer(tokenizer=tokenize, use_idf=True)
 port = PorterStemmer()
+
+
+def data_from_text():
+    df = pd.read_csv("/home/achanta/Desktop/output.csv", delimiter=',', header=None)
+    df.columns = ['review', 'label']
+    return df
+
+
+def text_processing():
+    df = data_from_text()
+    return df
+
+
+def model_building():
+    df = text_processing()
+    x_train, y_train, x_test, y_test = train_test(df, 0.1)
+    train_vectors, test_vectors = vector_fit_transform(x_train, x_test)
+    train_model(train_vectors, y_train)
+    predicted = predict(test_vectors)
+    print(accuracy(predicted, y_test))
+
+
+def save_vector():
+    pickle.dump(vect, open(vectorpath, "wb"))
+
+
+def load_vector():
+    global vect
+    vect = pickle.load(open(vectorpath, "rb"))
+
+
+def save_model():
+    pickle.dump(model, open(modelpath, "wb"))
+
+
+def load_model():
+    print("loading module")
+    global model
+    model = pickle.load(open(modelpath, 'rb'))
 
 
 def get_model():
@@ -28,6 +71,7 @@ def get_model():
 
 def train_model(x_train, y_train):
     model.fit(x_train, y_train)
+    save_model()
 
 
 def predict(test):
@@ -47,7 +91,9 @@ def porter(word):
 
 
 def fit_transform(train):
-    return vect.fit_transform(train)
+    fit = vect.fit_transform(train)
+    save_vector()
+    return fit
 
 
 def transform(test):
@@ -84,6 +130,14 @@ def pipeline(df):
     res = {
         "accuracy": accuracy(predicted, output),
         "output": output,
-        "predicted": predicted[0]
+        "predicted": predicted.flatten().tolist()
     }
     return res
+
+
+def model_start():
+    if path.exists(modelpath) and path.exists(vectorpath):
+        load_vector()
+        load_model()
+    else:
+        model_building()

@@ -1,21 +1,18 @@
 from pyspark import SparkConf, SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
-from pyspark.sql import Row, DataFrame, SQLContext
+from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession
-from utils import pipeline
-from stream_consumer import model_building
 from elasticsearch import Elasticsearch
 
+from utils import model_start
+from utils import pipeline
 
-def elasticSearch():
+def elastic_search():
     return Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 
 def start():
-    print("entered")
-    TCP_IP = 'localhost'
-    TCP_PORT = 9001
 
     conf = SparkConf()
     conf.setAppName('newsApp')
@@ -30,25 +27,23 @@ def start():
     sqlContext = SQLContext(sc)
     spark = SparkSession(sc)
     # create the Streaming Context from spark context with interval size 2 seconds
-    ssc = StreamingContext(sc, 2)
+    ssc = StreamingContext(sc, 5)
     kafkaStream = KafkaUtils.createDirectStream(ssc, ['guardian2'], {"metadata.broker.list": "localhost:9092"})
     values = kafkaStream.map(lambda x: x[1].encode("ascii", "ignore"))
     lines = values.map(lambda x: x.split("||"))
-    # df = lines.toPandas()
     lines.foreachRDD(process)
-    # pipeline = Pipeline(stages=[])
     ssc.start()
     ssc.awaitTermination()
 
 
-def getSqlContextInstance(sparkContext):
-    if ('sqlContextSingletonInstance' not in globals()):
+def get_sql_context_instance(sparkContext):
+    if 'sqlContextSingletonInstance' not in globals():
         globals()['sqlContextSingletonInstance'] = SQLContext(sparkContext)
     return globals()['sqlContextSingletonInstance']
 
 
-def getSparkSessionInstance(sparkContext):
-    if ('sparkSessionSingletonInstance' not in globals()):
+def get_spark_session_instance(sparkContext):
+    if 'sparkSessionSingletonInstance' not in globals():
         globals()['sparkSessionSingletonInstance'] = SparkSession(sparkContext)
     return globals()['sparkSessionSingletonInstance']
 
@@ -56,42 +51,43 @@ def getSparkSessionInstance(sparkContext):
 def process(time, rdd):
     print("========%s===========" % str(time))
     try:
-        sqlContext = getSqlContextInstance(rdd.context)
-        spark = getSparkSessionInstance(rdd.context)
+        sqlContext = get_sql_context_instance(rdd.context)
+        spark = get_spark_session_instance(rdd.context)
         df = rdd.toDF()
         pd_df = df.toPandas()
         pd_df.columns = ["label", "review"]
         acc = pipeline(pd_df)
         print(acc)
-        sendToES(acc)
+        send_to_es(acc)
     except Exception as e:
         print(e)
         pass
 
-def sendToES(data):
-    es = elasticSearch()
+
+def send_to_es(data):
+    es = elastic_search()
     if not es.indices.exists(index="labels"):
         datatype = {
             "mappings": {
                 "request-info": {
                     "properties": {
                         "accuracy": {
-                            "type": "text"
+                            "type": "double"
                         },
                         "output": {
-                            "type": "text"
+                            "type": "long"
                         },
                         "predicted": {
-                            "type": "text"
+                            "type": "long"
                         }
                     }
                 }
             }
         }
-        es.indices.create(index="labels", body=datatype)
-    es.index(index="labels", doc_type="request-info", body=data)
+        es.indices.create(index="newslabel", body=datatype)
+    es.index(index="newslabel", doc_type="request-info", body=data)
 
 
 if __name__ == "__main__":
-    model_building()
+    model_start()
     start()
