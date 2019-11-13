@@ -3,15 +3,22 @@ from nltk.tokenize import word_tokenize
 from nltk.stem.porter import PorterStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
+from sklearn.naive_bayes import MultinomialNB
 from os import path
 import pickle
 import pandas as pd
 
 modelpath = '/home/achanta/Desktop/model.sav'
 vectorpath = '/home/achanta/Desktop/vector.sav'
-model = LogisticRegression(solver='newton-cg', multi_class='multinomial')
+
+# model = LogisticRegression(solver='newton-cg', multi_class='multinomial')
+# model = MultinomialNB()
+# model = SVC(kernel='poly')
+model = MLPClassifier(activation='logistic', learning_rate='adaptive')
 
 
 def tokenize(text):
