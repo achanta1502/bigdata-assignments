@@ -14,6 +14,7 @@ import pandas as pd
 
 modelpath = '/home/achanta/Desktop/model.sav'
 vectorpath = '/home/achanta/Desktop/vector.sav'
+
 # model = LogisticRegression(solver='newton-cg', multi_class='multinomial')
 # model = MultinomialNB()
 # model = SVC(kernel='poly')
