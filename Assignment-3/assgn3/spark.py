@@ -66,7 +66,7 @@ def process(time, rdd):
 
 def send_to_es(data):
     es = elastic_search()
-    if not es.indices.exists(index="labels"):
+    if not es.indices.exists(index="assgn3"):
         datatype = {
             "mappings": {
                 "request-info": {
@@ -84,8 +84,8 @@ def send_to_es(data):
                 }
             }
         }
-        es.indices.create(index="newslabel", body=datatype)
-    es.index(index="newslabel", doc_type="request-info", body=data)
+        es.indices.create(index="assgn3", body=datatype)
+    es.index(index="assgn3", doc_type="request-info", body=data)
 
 
 if __name__ == "__main__":
