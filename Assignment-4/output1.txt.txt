@@ -1,0 +1,6 @@
+For rank 4 the RMSE is 0.8768487815037069
+For rank 8 the RMSE is 0.8661323150946303
+For rank 10 the RMSE is 0.8645708843493792
+For rank 12 the RMSE is 0.8638165717039546
+For rank 16 the RMSE is 0.8630405540046656
+The best model was trained with rank %s 16

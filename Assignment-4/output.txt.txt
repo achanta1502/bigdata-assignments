@@ -1,0 +1,48 @@
+Cluster : 0
+2866 , [Buddy Holly Story, The (1978),Drama]
+3749 , [Time Regained (Le Temps Retrouv�) (1999),Drama]
+243 , [Gordy (1995),Comedy]
+392 , [Secret Adventures of Tom Thumb, The (1993),Adventure|Children's]
+540 , [Sliver (1993),Thriller]
+Cluster : 1
+296 , [Pulp Fiction (1994),Crime|Drama]
+50 , [Usual Suspects, The (1995),Crime|Thriller]
+527 , [Schindler's List (1993),Drama|War]
+2858 , [American Beauty (1999),Comedy|Drama]
+1617 , [L.A. Confidential (1997),Crime|Film-Noir|Mystery|Thriller]
+Cluster : 2
+1198 , [Raiders of the Lost Ark (1981),Action|Adventure]
+2804 , [Christmas Story, A (1983),Comedy|Drama]
+1961 , [Rain Man (1988),Drama]
+1197 , [Princess Bride, The (1987),Action|Adventure|Comedy|Romance]
+377 , [Speed (1994),Action|Romance|Thriller]
+Cluster : 3
+2683 , [Austin Powers: The Spy Who Shagged Me (1999),Comedy]
+1777 , [Wedding Singer, The (1998),Comedy|Romance]
+2502 , [Office Space (1999),Comedy|Romance]
+539 , [Sleepless in Seattle (1993),Comedy|Romance]
+2694 , [Big Daddy (1999),Comedy]
+Cluster : 4
+1127 , [Abyss, The (1989),Action|Adventure|Sci-Fi|Thriller]
+3698 , [Running Man, The (1987),Action|Adventure|Sci-Fi]
+368 , [Maverick (1994),Action|Comedy|Western]
+1378 , [Young Guns (1988),Action|Comedy|Western]
+1372 , [Star Trek VI: The Undiscovered Country (1991),Action|Adventure|Sci-Fi]
+Cluster : 5
+1090 , [Platoon (1986),Drama|War]
+Cluster : 6
+1238 , [Local Hero (1983),Comedy]
+1199 , [Brazil (1985),Sci-Fi]
+2739 , [Color Purple, The (1985),Drama]
+1344 , [Cape Fear (1962),Film-Noir|Thriller]
+1175 , [Delicatessen (1991),Comedy|Sci-Fi]
+Cluster : 7
+1230 , [Annie Hall (1977),Comedy|Romance]
+Cluster : 8
+223 , [Clerks (1994),Comedy]
+Cluster : 9
+1997 , [Exorcist, The (1973),Horror]
+import org.apache.spark.ml.clustering.KMeans
+import org.apache.spark.ml.linalg.Vectors
+import org.apache.spark.sql.DataFrame
+k: Int = 10
